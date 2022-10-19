@@ -1,72 +1,61 @@
 const { ApolloServer, gql } = require ('apollo-server')
 
-    const usuariosLista = [
-      {id:1, nome: 'Gustavo'},
-      {id:2, nome: 'Luciane'},
-      {id:3, nome: 'Luana'}
 
-    ]
+    const db = {
+      usuarios: [
+        {id:1, nome: 'Gustavo', perfil: 1},
+        {id:2, nome: 'Luana', perfil: 2}
+      ],
+      perfis: [
+        {id:1, descricao: 'Senior'},
+        {id:2, descricao: 'Junior'}
+      ]
+    }
 
 
-    const produtosLista = [
-      {
-        id: 1,
-        nome: 'Macbook',
-        preco: 5000
-      },
-      {
-        id:2,
-        nome: 'iMac',
-        preco: 9000
-      }
 
-    ]
+
 
     const typeDefs = gql`
 
-        type Usuario {
-          id:ID
-          nome: String
-        }
-        type Produto {
-          id:ID
-          nome:String
-          preco: Int
-        }
+      type Usuario {
+        id: Int
+        nome: String
+        perfil: Perfil
+      }
 
-        
-        type Query {
-            usuarios: [Usuario]
-            produtos: [Produto]
-            usuario(id: Int, nome:String): Usuario
-            produto(id: Int, nome:String):Produto
-        }
+      type Perfil {
+        id: Int
+        descricao: String
+      }
+
+      type Query {
+        usuarios: Usuario
+        usuario(id:Int): Usuario
+      }
     `
 
     const resolvers = {
-      // Cada query tem que ser denominada com uma função
+
+      Usuario: {
+
+        perfil(obj, args){
+          console.log(obj)
+          return db.perfis.find( p => p.id === obj.id)
+        }
+      },
+
       Query: {
         usuarios(){
-          return usuariosLista
+          return db.usuarios[1]
         },
-
-        produtos(){
-          return produtosLista
-        },
-
         usuario(_, args){
-          const {id, nome} = args;
-          if (id) return usuariosLista.find(usuario => usuario.id === id)
-          return usuariosLista.find(usuario => usuario.nome === nome)
-        },
-
-        produto(_,args){
           const {id} = args
-          return produtosLista.find(produto => produto.id === id)
+          return db.usuarios.find(usuario => usuario.id === id)
         }
-
-           }
+      }
       
+     
     };
 
 const server = new ApolloServer({
